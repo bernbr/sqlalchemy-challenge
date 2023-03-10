@@ -60,6 +60,7 @@ def precipitation():
     query_result = session.query(*sel).filter(measurement.date <= conv_recent_date).filter(measurement.date > one_year).all()    
     session.close()
 
+    # jsonify
     precipitation = []
     for date, prcp in query_result:
             prcp_dict = {}
@@ -75,15 +76,17 @@ def stations():
     # Create our session (link) from Python to the DB
     session = Session(engine)
     # Design a query to find the most active stations (i.e. what stations have the most rows?)
-    station_list_query = active_stations = session.query(measurement.station, func.count(measurement.station)).\
+    station_list_query = session.query(measurement.station, station.name, func.count(measurement.station)).\
     group_by(measurement.station).\
     order_by(func.count(measurement.station).desc()).all()
     session.close()
 
+    # jsonify
     stations_list = []
-    for station, count in station_list_query:
+    for station, name, count in station_list_query:
          stations_dict = {}
          stations_dict['station'] = station
+         stations_dict['name'] = name
          stations_dict['count'] = count
          stations_list.append(stations_dict)
     return jsonify(stations_list)
@@ -111,6 +114,7 @@ def tobs():
     filter(measurement.date > one_year).all()    
     session.close()
 
+    # jsonify
     tobs_list = []
     for date, tobs in tobs_query:
          tobs_dict = {}
@@ -128,6 +132,7 @@ def start_date(start):
     start_tobs_query  = session.query(func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)).filter(measurement.date >= start).all()
     session.close()
 
+    # jsonify
     start_tobs_list = []
     for min, avg, max in start_tobs_query:
         start_tobs_dict = {}
@@ -148,6 +153,7 @@ def end(start, end):
         filter(measurement.date <=end).all()
     session.close()
 
+    # jsonify
     start_end_tobs_list = []
     for min, avg, max in start_end_tobs_query:
         start_end_tobs_dict = {}
